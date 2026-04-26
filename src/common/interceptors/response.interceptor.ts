@@ -1,0 +1,31 @@
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
+import { map } from 'rxjs/operators';
+
+@Injectable()
+export class ResponseInterceptor implements NestInterceptor {
+    intercept(context: ExecutionContext, next: CallHandler) {
+        return next.handle().pipe(
+            map((data: any) => {
+                if (data?.data && data?.meta) {
+                    return {
+                    success: true,
+                    message: null,
+                    data: data.data,
+                    meta: data.meta, // ✅ move meta to root
+                    };
+                }
+
+                return {
+                    success: true,
+                    message: null,
+                    data,
+                };
+            })
+        );
+    }
+}
