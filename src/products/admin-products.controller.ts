@@ -28,13 +28,17 @@ import { BulkUpdateStatusDto } from './dto/bulk-update-status.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN')
 @ApiBearerAuth()
 @Controller('admin/products')
 export class AdminProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly cloudinaryService: CloudinaryService
+  ) {}
 
     // GET /api/admin/products
     @Get()

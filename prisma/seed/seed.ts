@@ -1,4 +1,5 @@
 import { PrismaClient, ProductStatus } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -335,24 +336,21 @@ const customerProfile = await prisma.customerProfile.upsert({
 });
 
 // Default shipping address
-await prisma.customerAddress.upsert({
-  where: {
-    id: 'seed-default-address',
-  },
-  update: {},
-  create: {
-    id: 'seed-default-address',
-    customerId: customerProfile.id,
-    name: 'Juan Dela Cruz',
-    phone: '09171234567',
-    address: '123 Sample Street',
-    city: 'Quezon City',
-    province: 'Metro Manila',
-    isDefault: true,
+await prisma.user.create({
+  data: {
+    email: 'admin@medisupply.com',
+    password: await bcrypt.hash('password123', 10),
+    role: 'ADMIN',
+    customer: {
+      create: {
+        firstName: 'Admin',
+        lastName: 'User',
+        mobileNo: '09123456789',
+      },
+    },
   },
 });
 
-  console.log('Seed completed successfully');
 }
 
 main()

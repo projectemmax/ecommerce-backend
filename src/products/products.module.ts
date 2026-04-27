@@ -4,10 +4,11 @@ import { ProductsService } from './products.service';
 import { StorefrontProductsController } from './storefront-products.controller';
 import { AdminProductsController } from './admin-products.controller';
 import { ReviewsModule } from 'src/reviews/reviews.module';
+import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 
 @Module({
   imports: [ReviewsModule],
   controllers: [StorefrontProductsController, AdminProductsController],
-  providers: [ProductsService, PrismaService],
+  providers: [ProductsService, PrismaService, CloudinaryService],
 })
 export class ProductsModule {}
