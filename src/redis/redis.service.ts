@@ -3,18 +3,30 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService {
+  private redis: Redis;
 
-    private redis: Redis;
+  constructor() {
+    const redisUrl = process.env.REDIS_URL;
 
-    constructor() {
-        this.redis = new Redis({
-        host: '127.0.0.1',
-        port: 6379,
-        });
+    if (!redisUrl) {
+      console.warn('⚠️ REDIS_URL not set. Redis disabled.');
+      return;
     }
 
-    getClient() {
-        return this.redis;
-    }
+    this.redis = new Redis(redisUrl, {
+      tls: {}, // ✅ REQUIRED for rediss:// (Upstash)
+    });
 
+    this.redis.on('connect', () => {
+      console.log('✅ Redis connected');
+    });
+
+    this.redis.on('error', (err) => {
+      console.error('❌ Redis error:', err.message);
+    });
+  }
+
+  getClient() {
+    return this.redis ?? null;
+  }
 }

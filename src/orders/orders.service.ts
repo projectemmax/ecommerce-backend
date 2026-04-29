@@ -17,6 +17,9 @@ export class OrdersService {
 
     private async clearCache(userId: string) {
         const redis = this.redisService.getClient();
+
+        if (!redis) return;
+
         await redis.del(this.cartKey(userId));
     }
 

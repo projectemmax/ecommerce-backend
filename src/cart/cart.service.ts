@@ -41,6 +41,9 @@ export class CartService {
 
   private async cacheCart(userId: string, cart: any) {
     const redis = this.redisService.getClient();
+
+    if (!redis) return;
+
     await redis.set(
       this.cartKey(userId),
       JSON.stringify(cart),
@@ -51,6 +54,9 @@ export class CartService {
 
   private async clearCache(userId: string) {
     const redis = this.redisService.getClient();
+
+    if (!redis) return;
+
     await redis.del(this.cartKey(userId));
   }
 
