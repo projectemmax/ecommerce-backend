@@ -13,9 +13,9 @@
     "postinstall": "prisma generate",
     "start": "nest start",
 
-    "start:local": "cross-env NODE_ENV=local nest start --watch",
-    "start:staging": "cross-env NODE_ENV=staging nest start --watch",
-    "start:prod": "cross-env NODE_ENV=prod node dist/main",
+    "start:local": "NODE_ENV=local nest start --watch",
+    "start:staging": "NODE_ENV=staging nest start --watch",
+    "start:prod": "NODE_ENV=prod node dist/main",
 
     "start:debug": "nest start --debug --watch",
     "start:render": "node dist/main",
