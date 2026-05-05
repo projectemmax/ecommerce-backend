@@ -65,10 +65,6 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  console.log('ENV:', process.env.NODE_ENV);
-  console.log('DB:', process.env.DATABASE_URL);
-  console.log('PORT:', process.env.API_BASE_URL);
-
   await app.listen(3001);
 }
 
