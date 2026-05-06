@@ -347,3 +347,16 @@ enum PaymentMethod {
   MAYA
   CARD
 }
+
+model Media {
+  id        String   @id @default(uuid())
+  url       String
+  publicId  String
+  filename  String
+  size      Int?
+  folder    String?
+  createdAt DateTime @default(now())
+
+  @@index([folder])
+  @@index([createdAt])
+}
