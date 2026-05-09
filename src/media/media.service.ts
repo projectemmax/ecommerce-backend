@@ -13,6 +13,11 @@ export class MediaService {
     ) {}
 
     async upload(file: Express.Multer.File, folder?: string, usage?: string) {
+        const cleanUsage =
+            !usage || usage === 'undefined' || usage === 'all'
+                ? 'general'
+                : usage;
+
         const result = await this.cloudinary.uploadImage(file, {
             folder: folder || 'general',
         });
@@ -24,7 +29,7 @@ export class MediaService {
                 filename: file.originalname,
                 size: file.size,
                 folder,
-                usage: usage || 'general'
+                usage: cleanUsage,
             },
         });
     }
