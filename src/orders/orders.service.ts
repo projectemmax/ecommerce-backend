@@ -7,6 +7,7 @@ import { CheckoutDto } from './dto/checkout.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { AdminOrdersQueryDto } from './dto/admin-orders-query.dto';
 import { AdminUpdateOrderStatusDto } from './dto/admin-update-order-status.dto';
+import { AdminShipOrderDto } from './dto/admin-ship-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -27,6 +28,16 @@ export class OrdersService {
         private prisma: PrismaService,
         private redisService: RedisService
     ) {}
+
+    private buildTrackingUrl(courierCode?: string, trackingNumber?: string) {
+        if (!trackingNumber) return null;
+
+        if (courierCode?.toLowerCase() === 'jnt') {
+            return `https://www.jtexpress.ph/index/query/gzquery.html?bills=${encodeURIComponent(trackingNumber)}`;
+        }
+
+        return null;
+    }
 
     async getOrderHistory(
         userId: string,
@@ -581,6 +592,72 @@ export class OrdersService {
         });
 
         return updatedOrder;
+        });
+    }
+
+    async shipAdminOrder(
+        id: string,
+        dto: AdminShipOrderDto,
+        adminId: string,
+    ) {
+        const order = await this.prisma.order.findUnique({
+            where: { id },
+        });
+
+        if (!order) {
+            throw new NotFoundException('Order not found');
+        }
+
+        const allowedTransitions = ORDER_STATUS_TRANSITIONS[order.status];
+
+        if (!allowedTransitions.includes(OrderStatus.SHIPPED)) {
+            throw new BadRequestException(
+                `Cannot ship order from ${order.status}`,
+            );
+        }
+
+        if (order.paymentStatus !== PaymentStatus.PAID) {
+            throw new BadRequestException(
+                'Only paid orders can be marked as shipped',
+            );
+        }
+
+        const courierName = dto.courierName?.trim() || 'J&T Express';
+        const courierCode = dto.courierCode?.trim() || 'jnt';
+        const trackingNumber = dto.trackingNumber.trim();
+        const trackingUrl = this.buildTrackingUrl(courierCode, trackingNumber);
+
+        if (!trackingNumber) {
+            throw new BadRequestException('Tracking number is required');
+        }
+
+        return this.prisma.$transaction(async (tx) => {
+            const updatedOrder = await tx.order.update({
+                where: { id },
+                data: {
+                    status: OrderStatus.SHIPPED,
+                    shippedAt: new Date(),
+                    shippingStatus: 'SHIPPED',
+                    courierName,
+                    courierCode,
+                    trackingNumber,
+                    trackingUrl,
+                    shippingMethod: dto.shippingMethod,
+                    shippingFee: dto.shippingFee ?? order.shippingFee,
+                },
+            });
+
+            await tx.orderStatusHistory.create({
+                data: {
+                    orderId: id,
+                    fromStatus: order.status,
+                    status: OrderStatus.SHIPPED,
+                    note: dto.remarks,
+                    changedById: adminId,
+                },
+            });
+
+            return updatedOrder;
         });
     }
 

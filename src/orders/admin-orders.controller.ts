@@ -17,6 +17,7 @@ import { Roles } from '../auth/roles.decorator';
 import { OrdersService } from './orders.service';
 import { AdminOrdersQueryDto } from './dto/admin-orders-query.dto';
 import { AdminUpdateOrderStatusDto } from './dto/admin-update-order-status.dto';
+import { AdminShipOrderDto } from './dto/admin-ship-order.dto';
 
 @Controller('admin/orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -45,5 +46,14 @@ export class AdminOrdersController {
             dto,
             req.user.id,
         );
+    }
+
+    @Patch(':id/ship')
+    async shipAdminOrder(
+        @Param('id') id: string,
+        @Body() dto: AdminShipOrderDto,
+        @Req() req,
+    ) {
+        return this.ordersService.shipAdminOrder(id, dto, req.user.id);
     }
 }
